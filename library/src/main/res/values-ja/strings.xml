@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rmp_appirater_rate_title">%sの評価</string>
+    <string name="rmp_appirater_rate_message">ご意見をお願いします。%sを評価しますか？</string>
+    <string name="rmp_appirater_rate">%sを評価する</string>
+    <string name="rmp_appirater_rate_later">後で見る</string>
+    <string name="rmp_appirater_rate_cancel">いいえ</string>
+</resources>

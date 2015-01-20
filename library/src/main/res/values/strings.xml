@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rmp_appirater_rate_title">Rate %s</string>
+    <string name="rmp_appirater_rate_message">Would you mind taking a moment to rate it? Thanks for your support!</string>
+    <string name="rmp_appirater_rate">Yes, Rate %s</string>
+    <string name="rmp_appirater_rate_later">Remind me later</string>
+    <string name="rmp_appirater_rate_cancel">No, Thanks</string>
+</resources>
