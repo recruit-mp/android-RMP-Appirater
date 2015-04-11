@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rmp_appirater_rate_title">評分%s</string>
+    <string name="rmp_appirater_rate_message">是否願意花一些時間替%s打個分數？謝謝你的支持！</string>
+    <string name="rmp_appirater_rate">是，給%s評分</string>
+    <string name="rmp_appirater_rate_later">稍後提醒我</string>
+    <string name="rmp_appirater_rate_cancel">不，謝謝</string>
+</resources>
