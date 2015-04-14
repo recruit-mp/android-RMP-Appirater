@@ -183,34 +183,82 @@ public class RmpAppirater {
     }
 
     /**
-     * Show rating dialog. The dialog will be showed if the user hasn't declined to rate
-     * or hasn't rated current version.
+     * Show rating dialog.
+     * The dialog will be showed if the user hasn't declined to rate or hasn't rated current version.
      *
      * @param context            Context
      * @param onCompleteListener Listener which be called after process of review dialog finished.
      */
     public static void tryToShowPrompt(Context context, OnCompleteListener onCompleteListener) {
-        tryToShowPrompt(context, null, onCompleteListener);
+        tryToShowPrompt(context, null, null, onCompleteListener);
     }
 
     /**
-     * Show rating dialog. The dialog will be showed if the user hasn't declined to rate
-     * or hasn't rated current version.
+     * Show rating dialog.
+     * <p/>
+     * The dialog will be showed if the user hasn't declined to rate or hasn't rated current version.
      *
      * @param context            Context
      * @param options            RMP-Appirater options.
      * @param onCompleteListener Listener which be called after process of review dialog finished.
      */
     public static void tryToShowPrompt(Context context, Options options, OnCompleteListener onCompleteListener) {
+        tryToShowPrompt(context, null, options, onCompleteListener);
+    }
+
+    /**
+     * Show rating dialog.
+     *
+     * @param context                 Context
+     * @param showRateDialogCondition Showing rate dialog condition.
+     * @param options                 RMP-Appirater options.
+     * @param onCompleteListener      Listener which be called after process of review dialog finished.
+     */
+    public static void tryToShowPrompt(Context context, ShowRateDialogCondition showRateDialogCondition, Options options, OnCompleteListener onCompleteListener) {
+        // Set default show rate dialog condition.
+        if (showRateDialogCondition == null) {
+            showRateDialogCondition = new ShowRateDialogCondition() {
+                @Override
+                public boolean isShowRateDialog(long appLaunchCount, long appThisVersionCodeLaunchCount,
+                                                long firstLaunchDate, int appVersionCode, int previousAppVersionCode,
+                                                Date rateClickDate, Date reminderClickDate, boolean doNotShowAgain) {
+                    // Show rating dialog if user isn't rating yet and don't select "Not show again".
+                    return (rateClickDate == null && !doNotShowAgain);
+                }
+            };
+        }
+
         SharedPreferences prefs = getSharedPreferences(context);
 
+        // Load appThisVersionCodeLaunchCount
+        long appLaunchCount = prefs.getLong(PREF_KEY_APP_LAUNCH_COUNT, 0);
+        // Load appThisVersionCodeLaunchCount
+        long appThisVersionCodeLaunchCount = prefs.getLong(PREF_KEY_APP_THIS_VERSION_CODE_LAUNCH_COUNT, 0);
+        // Load firstLaunchDate
+        long firstLaunchDate = prefs.getLong(PREF_KEY_APP_FIRST_LAUNCHED_DATE, 0);
+        // Load appVersionCode and prefsAppVersionCode
+        int appVersionCode = Integer.MIN_VALUE;
+        final int previousAppVersionCode = prefs.getInt(PREF_KEY_APP_VERSION_CODE, Integer.MIN_VALUE);
+        try {
+            appVersionCode = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+            if (previousAppVersionCode != appVersionCode) {
+                // Reset appThisVersionCodeLaunchCount
+                appThisVersionCodeLaunchCount = 0;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.w(TAG, "Occurred PackageManager.NameNotFoundException", e);
+        }
         // Load rateClickDate
         final long rateClickDateMills = prefs.getLong(PREF_KEY_RATE_CLICK_DATE, 0);
         final Date rateClickDate = (rateClickDateMills > 0) ? new Date(rateClickDateMills) : null;
+        // Load reminderClickDate
+        final long reminderClickDateMills = prefs.getLong(PREF_KEY_REMINDER_CLICK_DATE, 0);
+        final Date reminderClickDate = (reminderClickDateMills > 0) ? new Date(reminderClickDateMills) : null;
         // Load doNotShowAgain
         final boolean doNotShowAgain = prefs.getBoolean(PREF_KEY_DO_NOT_SHOW_AGAIN, false);
 
-        if (rateClickDate == null && doNotShowAgain == false) {
+        if (showRateDialogCondition.isShowRateDialog(appLaunchCount, appThisVersionCodeLaunchCount, firstLaunchDate,
+                appVersionCode, previousAppVersionCode, rateClickDate, reminderClickDate, doNotShowAgain)) {
             showRateDialog(context, options, onCompleteListener);
         } else {
             if (onCompleteListener != null) {
@@ -246,6 +294,112 @@ public class RmpAppirater {
             prefsEditor.putBoolean(PREF_KEY_DO_NOT_SHOW_AGAIN, false);
             prefsEditor.commit();
         }
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context        Context
+     * @param appLaunchCount Launch count of This application.
+     */
+    public static void setAppLaunchCount(Context context, long appLaunchCount) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_APP_LAUNCH_COUNT, appLaunchCount);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context                       Context
+     * @param appThisVersionCodeLaunchCount Launch count of This application current version.
+     */
+    public static void setAppThisVersionCodeLaunchCount(Context context, long appThisVersionCodeLaunchCount) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_APP_LAUNCH_COUNT, appThisVersionCodeLaunchCount);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context         Context
+     * @param firstLaunchDate First launch date.
+     */
+    public static void setFirstLaunchDate(Context context, long firstLaunchDate) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_APP_FIRST_LAUNCHED_DATE, firstLaunchDate);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context       Context
+     * @param rateClickDate Date of "Rate" button clicked.
+     */
+    public static void setRateClickDate(Context context, Date rateClickDate) {
+        final long rateClickDateMills = ((rateClickDate != null) ? rateClickDate.getTime() : 0);
+
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_RATE_CLICK_DATE, rateClickDateMills);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context           Context
+     * @param reminderClickDate Date of "Remind me later" button clicked.
+     */
+    public static void setReminderClickDate(Context context, Date reminderClickDate) {
+        final long reminderClickDateMills = ((reminderClickDate != null) ? reminderClickDate.getTime() : 0);
+
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_REMINDER_CLICK_DATE, reminderClickDateMills);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context        Context
+     * @param doNotShowAgain Clicked "No, Thanks" if true.
+     */
+    public static void setDoNotShowAgain(Context context, boolean doNotShowAgain) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putBoolean(PREF_KEY_DO_NOT_SHOW_AGAIN, doNotShowAgain);
+
+        prefsEditor.commit();
     }
 
     private static SharedPreferences getSharedPreferences(Context context) {
@@ -493,7 +647,23 @@ public class RmpAppirater {
 
     }
 
+    /**
+     * Rate Dialog showing condition interface.
+     */
     public interface ShowRateDialogCondition {
+        /**
+         * Show rate dialog if returned true.
+         *
+         * @param appLaunchCount                Launch count of This application.
+         * @param appThisVersionCodeLaunchCount Launch count of This application current version.
+         * @param firstLaunchDate               First launch date.
+         * @param appVersionCode                This application version code.
+         * @param previousAppVersionCode        The application version code of when it's launched last.
+         * @param rateClickDate                 Date of "Rate" button clicked.
+         * @param reminderClickDate             Date of "Remind me later" button clicked.
+         * @param doNotShowAgain                Clicked "No, Thanks" if true.
+         * @return Show rate dialog if returned true.
+         */
         boolean isShowRateDialog(long appLaunchCount, long appThisVersionCodeLaunchCount,
                                  long firstLaunchDate, int appVersionCode, int previousAppVersionCode,
                                  Date rateClickDate, Date reminderClickDate, boolean doNotShowAgain);
