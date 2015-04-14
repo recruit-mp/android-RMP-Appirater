@@ -183,34 +183,82 @@ public class RmpAppirater {
     }
 
     /**
-     * Show rating dialog. The dialog will be showed if the user hasn't declined to rate
-     * or hasn't rated current version.
+     * Show rating dialog.
+     * The dialog will be showed if the user hasn't declined to rate or hasn't rated current version.
      *
      * @param context            Context
      * @param onCompleteListener Listener which be called after process of review dialog finished.
      */
     public static void tryToShowPrompt(Context context, OnCompleteListener onCompleteListener) {
-        tryToShowPrompt(context, null, onCompleteListener);
+        tryToShowPrompt(context, null, null, onCompleteListener);
     }
 
     /**
-     * Show rating dialog. The dialog will be showed if the user hasn't declined to rate
-     * or hasn't rated current version.
+     * Show rating dialog.
+     *
+     * The dialog will be showed if the user hasn't declined to rate or hasn't rated current version.
      *
      * @param context            Context
      * @param options            RMP-Appirater options.
      * @param onCompleteListener Listener which be called after process of review dialog finished.
      */
     public static void tryToShowPrompt(Context context, Options options, OnCompleteListener onCompleteListener) {
+        tryToShowPrompt(context, null, options, onCompleteListener);
+    }
+
+    /**
+     * Show rating dialog.
+     *
+     * @param context                 Context
+     * @param showRateDialogCondition Showing rate dialog condition.
+     * @param options                 RMP-Appirater options.
+     * @param onCompleteListener      Listener which be called after process of review dialog finished.
+     */
+    public static void tryToShowPrompt(Context context, ShowRateDialogCondition showRateDialogCondition, Options options, OnCompleteListener onCompleteListener) {
+        // Set default show rate dialog condition.
+        if (showRateDialogCondition == null) {
+            showRateDialogCondition = new ShowRateDialogCondition() {
+                @Override
+                public boolean isShowRateDialog(long appLaunchCount, long appThisVersionCodeLaunchCount,
+                                                long firstLaunchDate, int appVersionCode, int previousAppVersionCode,
+                                                Date rateClickDate, Date reminderClickDate, boolean doNotShowAgain) {
+                    // Show rating dialog if user isn't rating yet and don't select "Not show again".
+                    return (rateClickDate == null && !doNotShowAgain);
+                }
+            };
+        }
+
         SharedPreferences prefs = getSharedPreferences(context);
 
+        // Load appThisVersionCodeLaunchCount
+        long appLaunchCount = prefs.getLong(PREF_KEY_APP_LAUNCH_COUNT, 0);
+        // Load appThisVersionCodeLaunchCount
+        long appThisVersionCodeLaunchCount = prefs.getLong(PREF_KEY_APP_THIS_VERSION_CODE_LAUNCH_COUNT, 0);
+        // Load firstLaunchDate
+        long firstLaunchDate = prefs.getLong(PREF_KEY_APP_FIRST_LAUNCHED_DATE, 0);
+        // Load appVersionCode and prefsAppVersionCode
+        int appVersionCode = Integer.MIN_VALUE;
+        final int previousAppVersionCode = prefs.getInt(PREF_KEY_APP_VERSION_CODE, Integer.MIN_VALUE);
+        try {
+            appVersionCode = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+            if (previousAppVersionCode != appVersionCode) {
+                // Reset appThisVersionCodeLaunchCount
+                appThisVersionCodeLaunchCount = 0;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.w(TAG, "Occurred PackageManager.NameNotFoundException", e);
+        }
         // Load rateClickDate
         final long rateClickDateMills = prefs.getLong(PREF_KEY_RATE_CLICK_DATE, 0);
         final Date rateClickDate = (rateClickDateMills > 0) ? new Date(rateClickDateMills) : null;
+        // Load reminderClickDate
+        final long reminderClickDateMills = prefs.getLong(PREF_KEY_REMINDER_CLICK_DATE, 0);
+        final Date reminderClickDate = (reminderClickDateMills > 0) ? new Date(reminderClickDateMills) : null;
         // Load doNotShowAgain
         final boolean doNotShowAgain = prefs.getBoolean(PREF_KEY_DO_NOT_SHOW_AGAIN, false);
 
-        if (rateClickDate == null && doNotShowAgain == false) {
+        if (showRateDialogCondition.isShowRateDialog(appLaunchCount, appThisVersionCodeLaunchCount, firstLaunchDate,
+                appVersionCode, previousAppVersionCode, rateClickDate, reminderClickDate, doNotShowAgain)) {
             showRateDialog(context, options, onCompleteListener);
         } else {
             if (onCompleteListener != null) {
