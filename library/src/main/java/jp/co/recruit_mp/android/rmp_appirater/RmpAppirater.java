@@ -195,7 +195,7 @@ public class RmpAppirater {
 
     /**
      * Show rating dialog.
-     *
+     * <p/>
      * The dialog will be showed if the user hasn't declined to rate or hasn't rated current version.
      *
      * @param context            Context
@@ -294,6 +294,112 @@ public class RmpAppirater {
             prefsEditor.putBoolean(PREF_KEY_DO_NOT_SHOW_AGAIN, false);
             prefsEditor.commit();
         }
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context        Context
+     * @param appLaunchCount Launch count of This application.
+     */
+    public static void setAppLaunchCount(Context context, long appLaunchCount) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_APP_LAUNCH_COUNT, appLaunchCount);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context                       Context
+     * @param appThisVersionCodeLaunchCount Launch count of This application current version.
+     */
+    public static void setAppThisVersionCodeLaunchCount(Context context, long appThisVersionCodeLaunchCount) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_APP_LAUNCH_COUNT, appThisVersionCodeLaunchCount);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context         Context
+     * @param firstLaunchDate First launch date.
+     */
+    public static void setFirstLaunchDate(Context context, long firstLaunchDate) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_APP_FIRST_LAUNCHED_DATE, firstLaunchDate);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context       Context
+     * @param rateClickDate Date of "Rate" button clicked.
+     */
+    public static void setRateClickDate(Context context, Date rateClickDate) {
+        final long rateClickDateMills = ((rateClickDate != null) ? rateClickDate.getTime() : 0);
+
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_RATE_CLICK_DATE, rateClickDateMills);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context           Context
+     * @param reminderClickDate Date of "Remind me later" button clicked.
+     */
+    public static void setReminderClickDate(Context context, Date reminderClickDate) {
+        final long reminderClickDateMills = ((reminderClickDate != null) ? reminderClickDate.getTime() : 0);
+
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putLong(PREF_KEY_REMINDER_CLICK_DATE, reminderClickDateMills);
+
+        prefsEditor.commit();
+    }
+
+    /**
+     * Modify internal value.
+     * <p/>
+     * If you use this method, you might need to have a good understanding of this class code.
+     *
+     * @param context        Context
+     * @param doNotShowAgain Clicked "No, Thanks" if true.
+     */
+    public static void setDoNotShowAgain(Context context, boolean doNotShowAgain) {
+        SharedPreferences prefs = getSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+
+        prefsEditor.putBoolean(PREF_KEY_DO_NOT_SHOW_AGAIN, doNotShowAgain);
+
+        prefsEditor.commit();
     }
 
     private static SharedPreferences getSharedPreferences(Context context) {
@@ -541,7 +647,23 @@ public class RmpAppirater {
 
     }
 
+    /**
+     * Rate Dialog showing condition interface.
+     */
     public interface ShowRateDialogCondition {
+        /**
+         * Show rate dialog if returned true.
+         *
+         * @param appLaunchCount                Launch count of This application.
+         * @param appThisVersionCodeLaunchCount Launch count of This application current version.
+         * @param firstLaunchDate               First launch date.
+         * @param appVersionCode                This application version code.
+         * @param previousAppVersionCode        The application version code of when it's launched last.
+         * @param rateClickDate                 Date of "Rate" button clicked.
+         * @param reminderClickDate             Date of "Remind me later" button clicked.
+         * @param doNotShowAgain                Clicked "No, Thanks" if true.
+         * @return Show rate dialog if returned true.
+         */
         boolean isShowRateDialog(long appLaunchCount, long appThisVersionCodeLaunchCount,
                                  long firstLaunchDate, int appVersionCode, int previousAppVersionCode,
                                  Date rateClickDate, Date reminderClickDate, boolean doNotShowAgain);
