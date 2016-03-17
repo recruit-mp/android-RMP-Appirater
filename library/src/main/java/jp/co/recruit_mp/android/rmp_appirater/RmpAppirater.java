@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Recruit Marketing Partners Co.,Ltd
+ * Copyright (C) 2015-2016 Recruit Marketing Partners Co.,Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package jp.co.recruit_mp.android.rmp_appirater;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -411,7 +411,7 @@ public class RmpAppirater {
         final int applicationNameResId = context.getApplicationInfo().labelRes;
         final String applicationName = context.getString(applicationNameResId);
 
-        final Dialog dialog = new Dialog(context);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         LinearLayout layout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.rmp_appirater_dialog, null);
         TextView messageView = (TextView) layout.findViewById(R.id.message);
@@ -427,6 +427,41 @@ public class RmpAppirater {
         } else {
             rateButton.setText(context.getString(R.string.rmp_appirater_rate, applicationName));
         }
+
+        Button rateLaterButton = (Button) layout.findViewById(R.id.rate_later);
+        if (options != null && !TextUtils.isEmpty(options.getDialogRateLaterButtonText())) {
+            rateLaterButton.setText(options.getDialogRateLaterButtonText());
+        } else {
+            rateLaterButton.setText(context.getString(R.string.rmp_appirater_rate_later, applicationName));
+        }
+
+        Button rateCancelButton = (Button) layout.findViewById(R.id.rate_cancel);
+        if (options != null && !TextUtils.isEmpty(options.getDialogRateCancelButtonText())) {
+            rateCancelButton.setText(options.getDialogRateCancelButtonText());
+        } else {
+            rateCancelButton.setText(context.getString(R.string.rmp_appirater_rate_cancel, applicationName));
+        }
+
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                remindApp(context);
+                if (onCompleteListener != null) {
+                    onCompleteListener.onComplete();
+                }
+            }
+        });
+
+        builder.setCancelable(true);
+        if (options != null && !TextUtils.isEmpty(options.getDialogTitle())) {
+            builder.setTitle(options.getDialogTitle());
+        } else {
+            builder.setTitle(context.getString(R.string.rmp_appirater_rate_title, applicationName));
+        }
+        builder.setView(layout);
+
+        final AlertDialog dialog = builder.create();
+
         rateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -438,12 +473,6 @@ public class RmpAppirater {
             }
         });
 
-        Button rateLaterButton = (Button) layout.findViewById(R.id.rate_later);
-        if (options != null && !TextUtils.isEmpty(options.getDialogRateLaterButtonText())) {
-            rateLaterButton.setText(options.getDialogRateLaterButtonText());
-        } else {
-            rateLaterButton.setText(context.getString(R.string.rmp_appirater_rate_later, applicationName));
-        }
         rateLaterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -455,12 +484,6 @@ public class RmpAppirater {
             }
         });
 
-        Button rateCancelButton = (Button) layout.findViewById(R.id.rate_cancel);
-        if (options != null && !TextUtils.isEmpty(options.getDialogRateCancelButtonText())) {
-            rateCancelButton.setText(options.getDialogRateCancelButtonText());
-        } else {
-            rateCancelButton.setText(context.getString(R.string.rmp_appirater_rate_cancel, applicationName));
-        }
         rateCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -472,23 +495,6 @@ public class RmpAppirater {
             }
         });
 
-        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                remindApp(context);
-                if (onCompleteListener != null) {
-                    onCompleteListener.onComplete();
-                }
-            }
-        });
-
-        dialog.setCancelable(true);
-        if (options != null && !TextUtils.isEmpty(options.getDialogTitle())) {
-            dialog.setTitle(options.getDialogTitle());
-        } else {
-            dialog.setTitle(context.getString(R.string.rmp_appirater_rate_title, applicationName));
-        }
-        dialog.setContentView(layout);
         dialog.show();
     }
 
