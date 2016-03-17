@@ -9,7 +9,7 @@ RMP-Appirater is an Android library that will help remind users to review your a
 Gradle:
 
 ```groovy
-compile 'jp.co.recruit_mp:android-RMP-Appirater:1.1.0'
+compile 'jp.co.recruit_mp:android-RMP-Appirater:1.1.1'
 ```
 
 ## Usage
